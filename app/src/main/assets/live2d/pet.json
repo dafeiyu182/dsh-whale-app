@@ -1,0 +1,114 @@
+{
+  "petManifestVersion": 2,
+  "id": "kamiya-whale",
+  "displayName": "大肥鱼",
+  "description": "神宫凉子（Kamiya_Ryoko）在 VGen 免费发布的 DeepSeek-chan Live2D 模型，DeepSeek 鲸鱼娘形态。含 8 组动作与 23 个表情装扮。",
+  "version": "1.2.0",
+  "author": "Kamiya_Ryoko（神宫凉子）",
+  "license": "VGen 免费发布：个人使用 + 商业内容/周边均可，无需另行授权。原始发布页 https://vgen.co/KAMIYA/product/1c55a71a-2747-4616-819d-2dc0a934089d",
+  "homepage": "https://vgen.co/KAMIYA",
+  "renderer": "live2d",
+  "live2d": {
+    "model": "dafeiyu.model3.json",
+    "scale": 1,
+    "translate": { "x": 0, "y": 0 },
+    "motions": {
+      "idle": "Idle",
+      "waiting": "Idle",
+      "thinking": "Idle",
+      "tool": "Takeoff",
+      "done": "Takeoff",
+      "failed": "Takeoff"
+    },
+    "expressions": {
+      "done": "GreaterLess",
+      "failed": "Dizzy"
+    },
+    "motionOptions": {},
+    "expressionSlots": [
+      {
+        "id": "body",
+        "label": "体型",
+        "none": "默认",
+        "options": [
+          { "label": "圆一点", "expressions": ["Body1"] },
+          { "label": "瘦一点", "expressions": ["Body2"] },
+          { "label": "还原默认", "expressions": ["BodyDefault"] }
+        ]
+      },
+      {
+        "id": "eyes",
+        "label": "眼睛",
+        "none": "无",
+        "options": [
+          { "label": "屑屑眼", "expressions": ["Smug"] },
+          { "label": "爱心眼", "expressions": ["HeartEye"] },
+          { "label": "流泪", "expressions": ["Tears"] },
+          { "label": "圈圈眼", "expressions": ["Dizzy"] },
+          { "label": "＞＜", "expressions": ["GreaterLess"] },
+          { "label": "黑脸", "expressions": ["DarkFace"] },
+          { "label": "流冷汗", "expressions": ["Sweat"] }
+        ]
+      },
+      {
+        "id": "mouth",
+        "label": "嘴",
+        "none": "无",
+        "options": [
+          { "label": "兔牙", "expressions": ["Bucktooth"] }
+        ]
+      },
+      {
+        "id": "glasses",
+        "label": "眼镜",
+        "none": "无",
+        "options": [
+          { "label": "单片眼镜", "expressions": ["Monocle"] },
+          { "label": "黑框眼镜", "expressions": ["GlassesBlack"] }
+        ]
+      },
+      {
+        "id": "head",
+        "label": "头顶",
+        "none": "无",
+        "options": [
+          { "label": "钢盆", "expressions": ["SteelBasin"] }
+        ]
+      },
+      {
+        "id": "cloth",
+        "label": "衣服",
+        "none": "无",
+        "options": [
+          { "label": "胸口衣服", "expressions": ["ChestCloth"] },
+          { "label": "裙子切换", "expressions": ["Skirt"] },
+          { "label": "脱鞋", "expressions": ["ShoesOff"] }
+        ]
+      },
+      {
+        "id": "hand",
+        "label": "手部动作",
+        "none": "默认手",
+        "options": [
+          { "label": "举手", "motion": "HandUp" },
+          { "label": "放下手", "motion": "HandDown" },
+          { "label": "竖手指", "motion": "FingerOn", "expressions": ["FingerOn"] },
+          { "label": "收回手指", "motion": "FingerOff", "expressions": ["FingerOff"] },
+          { "label": "狗尾草", "motion": "FoxtailOn" },
+          { "label": "收回狗尾草", "motion": "FoxtailOff" }
+        ]
+      },
+      {
+        "id": "pose",
+        "label": "姿态与状态",
+        "none": "无",
+        "options": [
+          { "label": "前倾", "expressions": ["Lean"] },
+          { "label": "脸红", "expressions": ["Blush"] },
+          { "label": "加载中", "expressions": ["Loading"] },
+          { "label": "尾巴开关", "expressions": ["Tail"] }
+        ]
+      }
+    ]
+  }
+}

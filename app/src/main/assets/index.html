@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>大肥鱼</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; background:transparent; overflow:hidden;
+    -webkit-user-select:none; user-select:none; }
+  #stage { position:fixed; inset:0; }
+  #bubble {
+    position:fixed; left:6%; right:6%; top:2%;
+    max-height:46%; overflow:hidden;
+    background:rgba(255,255,255,0.94);
+    color:#1b1b1b; font-size:14px; line-height:1.35;
+    border-radius:14px; padding:9px 12px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.18);
+    opacity:0; transition:opacity .18s ease;
+    word-break:break-word; font-family:system-ui,-apple-system,"PingFang SC",sans-serif;
+    display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical;
+  }
+  #bubble.show { opacity:1; }
+  #bubble::after {
+    content:''; position:absolute; bottom:-8px; left:50%; margin-left:-8px;
+    border:8px solid transparent; border-top-color:rgba(255,255,255,0.94); border-bottom:0;
+  }
+  #hint {
+    position:fixed; bottom:4px; left:0; right:0; text-align:center;
+    font-size:11px; color:rgba(255,255,255,0.85); text-shadow:0 1px 3px rgba(0,0,0,.5);
+    font-family:system-ui,sans-serif; pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="bubble"></div>
+<div id="hint">点我说话</div>
+
+<script src="lib/live2dcubismcore.min.js"></script>
+<script src="lib/pixi.min.js"></script>
+<script src="lib/pixi-live2d-display.cubism4.js"></script>
+<script>
+(function () {
+  var app, model, talkUntil = 0, mouthOpen = 0, hideTimer = null;
+  var ZOOM = 4.2;  // 舞台 CSS 放大倍数：让可见立绘铺满窗口宽度
+  var bubbleEl = document.getElementById('bubble');
+  var soundValue = 0;     // 0..1 说话时嘴张合
+  var talking = false;
+
+  function showBubble(text, autoHideMs) {
+    bubbleEl.textContent = text;
+    bubbleEl.classList.add('show');
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+    if (autoHideMs && autoHideMs > 0) {
+      hideTimer = setTimeout(function () {
+        bubbleEl.classList.remove('show');
+      }, autoHideMs);
+    }
+  }
+  window.showBubble = showBubble;
+
+  window.startTalk = function () { talking = true; };
+  window.stopTalk = function () {
+    talking = false;
+    soundValue = 0;
+  };
+  // 兼容旧接口：true/false 也可以直接控制嘴
+  window.setMouth = function (v) { talking = !!v; };
+
+  async function boot() {
+    app = new PIXI.Application({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      backgroundAlpha: 0,
+      antialias: true,
+      resolution: Math.min(window.devicePixelRatio || 1, 2),
+      autoDensity: true
+    });
+    document.getElementById('stage').appendChild(app.view);
+
+    try {
+      model = await PIXI.live2d.Live2DModel.from(
+        'live2d/dafeiyu.model3.json',
+        { autoInteract: false }
+      );
+    } catch (e) {
+      var msg = (e && e.message) ? e.message : String(e);
+      showBubble('模型加载失败：' + msg + ' @ ' + (location && location.origin ? location.origin : '?'), 9000);
+      return;
+    }
+
+    // 按立绘真实包围盒缩放并居中：先 scale=1 取其本地 bounds，再按窗口高度缩放。
+    // 用 getLocalBounds 而不是 model.height，避免画布留白导致“越算越小/看不见”。
+    function fitModel() {
+      model.scale.set(1);
+      var b = model.getLocalBounds();
+      var bh = b.height || 1, bw = b.width || 1;
+      var sH = (app.screen.height * 0.95) / bh;
+      var sW = (app.screen.width * 0.95) / bw;
+      var s = Math.min(sH, sW);
+      model.scale.set(s);
+      model.x = (app.screen.width - bw * s) / 2 - b.x * s;
+      model.y = (app.screen.height - bh * s) / 2 - b.y * s;
+      // C 方案：JS 侧保持已知能渲染的等比缩放，再用 CSS 放大整个舞台，
+      // 绕开"JS 缩放 >0.02 就整块空白"的问题。可见立绘约占舞台宽 1/4.2。
+      var stageEl = document.getElementById('stage');
+      if (stageEl) {
+        stageEl.style.transformOrigin = '50% 50%';
+        stageEl.style.transform = 'scale(' + ZOOM + ')';
+      }
+      var hint = document.getElementById('hint');
+      if (hint) {
+        hint.style.bottom = '2px';
+        hint.style.font = '9px monospace';
+        hint.textContent = 'sw=' + app.screen.width + ' sh=' + app.screen.height
+          + ' bw=' + Math.round(bw) + ' bh=' + Math.round(bh)
+          + ' mw=' + Math.round(model.width) + ' mh=' + Math.round(model.height)
+          + ' s=' + s.toFixed(4);
+      }
+    }
+    app.stage.addChild(model);
+    fitModel();
+    setTimeout(fitModel, 400);
+    setTimeout(fitModel, 1500);
+    window.addEventListener('resize', fitModel);
+
+    // 点我 = 先播激活语音，播完再开始听
+    var activateAudio = new Audio('voice/activate.mp3');
+    activateAudio.preload = 'auto';
+    var listeningStarted = false;
+    function startListen() {
+      if (listeningStarted) return;
+      listeningStarted = true;
+      setTimeout(function () { listeningStarted = false; }, 1200);
+      if (window.WhaleNative && window.WhaleNative.listen) window.WhaleNative.listen();
+    }
+    activateAudio.onended = startListen;
+    model.interactive = true;
+    model.on('pointertap', function () {
+      try {
+        activateAudio.currentTime = 0;
+        var p = activateAudio.play();
+        if (p && p.catch) p.catch(function () { startListen(); });
+        setTimeout(startListen, 4000); // 兜底：音频异常时也能进听
+      } catch (e) {
+        startListen();
+      }
+    });
+
+    // 口型：说话时正弦开合
+    app.ticker.add(function (dt) {
+      if (!model || !model.internalModel) return;
+      var core = model.internalModel.coreModel;
+      if (!core || !core.setParameterValueById) return;
+      // 隐藏模型自带的「鼻子」部件（Part10 / Part46），贴图已擦除但部件仍会画成黑块
+      try {
+        if (core.setPartOpacityById) {
+          core.setPartOpacityById('Part10', 0);
+          core.setPartOpacityById('Part46', 0);
+        }
+      } catch (e) {}
+      // Clothes2 = 模型里「2. 大小变」参数：0=默认 0.4=圆一点 1=大一号
+      try { core.setParameterValueById('Clothes2', 1); } catch (e) {}
+      if (talking) {
+        var t = performance.now() / 1000;
+        var v = 0.5 + 0.5 * Math.sin(t * 14);
+        v *= 0.9;
+        try { core.setParameterValueById('ParamMouthOpenY', v); } catch (e) {}
+      } else {
+        try { core.setParameterValueById('ParamMouthOpenY', 0); } catch (e) {}
+      }
+    });
+
+    // Idle 循环动作（模型自带 8 组动作，这里只播待机）
+    function playIdle() { try { model.motion('Idle'); } catch (e) {} }
+    playIdle();
+    setInterval(playIdle, 6500);
+
+    // 随机表情：每 18 秒换一个，4 秒后复位
+    var EXPS = ['GreaterLess', 'Dizzy', 'Bucktooth', 'Smug', 'Sweat',
+                'Tears', 'HeartEye', 'Blush', 'DarkFace'];
+    setInterval(function () {
+      var e = EXPS[Math.floor(Math.random() * EXPS.length)];
+      try { model.expression(e); } catch (err) {}
+      setTimeout(function () { try { model.expression(); } catch (err) {} }, 4200);
+    }, 18000);
+
+    showBubble('点我说句话', 2600);
+  }
+
+  window.addEventListener('resize', function () {
+    if (app) app.renderer.resize(window.innerWidth, window.innerHeight);
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>

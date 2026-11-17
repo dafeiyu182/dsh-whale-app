@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="大肥鱼 · 桌面助手"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:paddingBottom="6dp" />
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
+            android:paddingBottom="14dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DeepSeek API Key"
+            android:textStyle="bold"
+            android:paddingTop="4dp" />
+
+        <EditText
+            android:id="@+id/apiKey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="sk-..."
+            android:inputType="textPassword"
+            android:importantForAutofill="no" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="人格设定（system prompt）"
+            android:textStyle="bold"
+            android:paddingTop="12dp" />
+
+        <EditText
+            android:id="@+id/persona"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:gravity="top|start"
+            android:inputType="textMultiLine"
+            android:importantForAutofill="no" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="14dp">
+
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="保存" />
+
+            <Button
+                android:id="@+id/btnOverlay"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="悬浮窗权限" />
+
+            <Button
+                android:id="@+id/btnMic"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="麦克风" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="6dp">
+
+            <Button
+                android:id="@+id/btnStart"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="把鱼放到屏幕上" />
+
+            <Button
+                android:id="@+id/btnStop"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="收起" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="18dp"
+            android:textSize="12sp"
+            android:lineSpacingExtra="3dp"
+            android:text="用法：\n1. 填 API Key 并保存\n2. 授予「悬浮窗」和「麦克风」权限\n3. 点「把鱼放到屏幕上」\n4. 点一下鱼 → 说一句话 → 松开（自动识别）\n5. 长按鱼可拖动位置\n\n注意：语音识别用系统自带服务，部分机型需要联网。" />
+    </LinearLayout>
+</ScrollView>
